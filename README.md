@@ -5,7 +5,8 @@ A modern and interactive **Resistance Calculator** built using **HTML, CSS, and 
 This project helps users quickly calculate resistor resistance values using resistor band colors with support for both **3-band** and **4-band** resistors.This is my first Github project.
 
 ---
-
+## Live Link 
+https://meghana413.github.io/Resistor-Color-Code-Calaculator/
 ## 🚀 Features
 
 - 🎨 Interactive resistor color selection
