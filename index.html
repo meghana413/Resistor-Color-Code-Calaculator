@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resistor Color Code Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <i id="menu-icon" class="fa-solid fa-bars"></i>
+    <h1>Resistor Color Code Calculator</h1>
+    <i id="rocket-icon" class="fa-solid fa-rocket"></i>
+    </div>
+
+    <div class="mode-selector">
+      <button id="threeBandButton" class="active">3 Band</button>
+      <button id="fourBandButton" class="inactive">4 Band</button>
+    </div>
+
+    <div class="resistor-box">
+      <div class="wire left"></div>
+      <div class="stripe" id="stripe1"></div>
+      <div class="stripe" id="stripe2"></div>
+      <div class="stripe" id="stripe3"></div>
+      <div class="stripe" id="stripe4"></div>
+      <div class="wire right"></div>
+    </div>
+
+    <div class="band-section">
+      <div class="band">
+        <label>Band 1</label>
+        <select id="band1">
+          <option value="">Select Color</option>
+        </select>
+      </div>
+
+      <div class="band">
+        <label>Band 2</label>
+        <select id="band2">
+          <option value="">Select Color</option>
+        </select>
+      </div>
+
+      <div class="band">
+        <label>Multiplier</label>
+        <select id="band3">
+          <option value="">Select Color</option>
+        </select>
+      </div>
+
+      <div class="band" id="toleranceContainer" style="display:none">
+        <label>Tolerance</label>
+        <select id="band4">
+          <option value="">Select Color</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="result-box">
+      <h2>Calculated Resistance</h2>
+      <div class="result placeholder" id="result">
+        Select all required bands
+      </div>
+    </div>
+  </div>
+
+  <script>
+     const digitColors = {
+      black: 0,
+      brown: 1,
+      red: 2,
+      orange: 3,
+      yellow: 4,
+      green: 5,
+      blue: 6,
+      violet: 7,
+      gray: 8,
+      white: 9
+    };
+
+    const multiplierColors = {
+      black: 1,
+      brown: 10,
+      red: 100,
+      orange: 1000,
+      yellow: 10000,
+      green: 100000,
+      blue: 1000000,
+      violet: 10000000,
+      gray: 100000000,
+      white: 1000000000,
+      gold: 0.1,
+      silver: 0.01
+    };
+
+    const toleranceColors = {
+      brown: { 
+        text: '±1%', 
+        value: 1 
+      },
+      red: { 
+        text: '±2%', 
+        value: 2 
+      },
+      green: { 
+        text: '±0.5%', 
+        value: 0.5 
+      },
+      blue: { 
+        text: '±0.25%', 
+        value: 0.25 
+      },
+      violet: { 
+        text: '±0.1%', 
+        value: 0.1 
+      },
+      gray: { 
+        text: '±0.05%', 
+        value: 0.05 
+      },
+      gold: { 
+        text: '±5%', 
+        value: 5 
+      },
+      silver: { 
+        text: '±10%', 
+        value: 10 
+      }
+    };
+
+    const band1 = document.getElementById('band1');
+    const band2 = document.getElementById('band2');
+    const band3 = document.getElementById('band3');
+    const band4 = document.getElementById('band4');
+    const result = document.getElementById('result');
+
+    const stripe1 = document.getElementById('stripe1');
+    const stripe2 = document.getElementById('stripe2');
+    const stripe3 = document.getElementById('stripe3');
+    const stripe4 = document.getElementById('stripe4');
+
+    let isFourBand = false;
+
+    function populateSelect(select, colors) {
+      for (let color in colors) {
+        const option = document.createElement('option');
+        option.value = color;
+        option.textContent = color.charAt(0).toUpperCase() + color.slice(1);
+        select.appendChild(option);
+      }
+    }
+
+    populateSelect(band1, digitColors);
+    populateSelect(band2, digitColors);
+    populateSelect(band3, multiplierColors);
+    populateSelect(band4, toleranceColors);
+
+    function formatResistance(value) {
+      if (value >= 1000000000) {
+        return (value / 1000000000).toFixed(2) + ' GΩ';
+      }
+      if (value >= 1000000) {
+        return (value / 1000000).toFixed(2) + ' MΩ';
+      }
+      if (value >= 1000) {
+        return (value / 1000).toFixed(2) + ' kΩ';
+      }
+      return value.toFixed(2) + ' Ω';
+    }
+
+    function updateStripes() {
+      stripe1.style.background = band1.value || 'transparent';
+      stripe2.style.background = band2.value || 'transparent';
+      stripe3.style.background = band3.value || 'transparent';
+
+      if (isFourBand) {
+        stripe4.style.display = 'block';
+        stripe4.style.background = band4.value || 'transparent';
+      } else {
+        stripe4.style.display = 'none';
+      }
+    }
+    function calculateResistance() {
+      updateStripes();
+
+      if (!band1.value || !band2.value || !band3.value) {
+        result.textContent = 'Select all required bands';
+        result.classList.add('placeholder');
+        return;
+    }
+
+      if (isFourBand && !band4.value) {
+        result.textContent = 'Select tolerance band';
+        result.classList.add('placeholder');
+        return;
+  }
+
+    const firstDigit = digitColors[band1.value];
+
+    const secondDigit = digitColors[band2.value];
+
+    const multiplier = multiplierColors[band3.value];
+
+    const resistance = ((firstDigit * 10) + secondDigit) * multiplier;
+    let displayText = formatResistance(resistance);
+  
+    if (isFourBand) {
+        const toleranceData = toleranceColors[band4.value];
+        const tolerancePercent = toleranceData.value;
+        const toleranceAmount = (resistance * tolerancePercent) / 100;
+        const minResistance = resistance - toleranceAmount;
+        const maxResistance = resistance + toleranceAmount;
+
+        result.innerHTML = `
+
+        <div class="main-result">
+          ${displayText} ${toleranceData.text}
+        </div>
+
+        <div class="range-result">
+          Min: ${formatResistance(minResistance)}
+        </div>
+
+        <div class="range-result">
+          Max: ${formatResistance(maxResistance)}
+        </div>
+
+        `;
+
+  }
+
+  else {
+    result.textContent = displayText;
+  }
+  result.classList.remove('placeholder');
+}
+    document.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', calculateResistance);
+    });
+
+    const threeBandButton = document.getElementById('threeBandButton');
+    const fourBandButton = document.getElementById('fourBandButton');
+    const toleranceContainer = document.getElementById('toleranceContainer');
+
+    threeBandButton.addEventListener('click', () => {
+      isFourBand = false;
+      toleranceContainer.style.display = 'none';
+      threeBandButton.classList.add('active');
+      threeBandButton.classList.remove('inactive');
+      fourBandButton.classList.add('inactive');
+      fourBandButton.classList.remove('active');
+      calculateResistance();
+    });
+
+    fourBandButton.addEventListener('click', () => {
+      isFourBand = true;
+      toleranceContainer.style.display = 'block';
+      fourBandButton.classList.add('active');
+      fourBandButton.classList.remove('inactive');
+      threeBandButton.classList.add('inactive');
+      threeBandButton.classList.remove('active');
+      calculateResistance();
+    });
+
+    calculateResistance();
+  </script>
+</body>
+</html>
